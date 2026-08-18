@@ -1,0 +1,8 @@
+.build/
+.swiftpm/
+*.xcodeproj
+.DS_Store
+
+# Personal overrides. Never committed — this is where real secrets go.
+.env.local
+.env.*.local
