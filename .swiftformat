@@ -1,0 +1,4 @@
+# https://github.com/nicklockwood/SwiftFormat
+# Indentation matches .editorconfig: spaces, width 2.
+--indent 2
+--swiftversion 6.0
