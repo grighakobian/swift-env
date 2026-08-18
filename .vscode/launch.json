@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-env}",
+            "name": "Debug env-codegen",
+            "target": "env-codegen",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug env-codegen"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-env}",
+            "name": "Release env-codegen",
+            "target": "env-codegen",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release env-codegen"
+        }
+    ]
+}

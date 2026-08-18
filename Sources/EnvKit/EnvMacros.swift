@@ -27,7 +27,7 @@
 @attached(member, names: named(_envReader), named(envRequirements), named(init(_:)))
 @attached(extension, conformances: EnvConfiguration)
 public macro EnvConfig() =
-    #externalMacro(module: "EnvKitMacrosPlugin", type: "EnvConfigMacro")
+  #externalMacro(module: "EnvKitMacrosPlugin", type: "EnvConfigMacro")
 
 /// Reads `key` from the enclosing ``EnvConfig`` type's reader.
 ///
@@ -39,7 +39,7 @@ public macro EnvConfig() =
 ///   that it can be validated when the type is initialized.
 @attached(accessor)
 public macro Env(_ key: String) =
-    #externalMacro(module: "EnvKitMacrosPlugin", type: "EnvMacro")
+  #externalMacro(module: "EnvKitMacrosPlugin", type: "EnvMacro")
 
 /// Reads `key`, falling back to `default` when it is absent or empty.
 ///
@@ -48,7 +48,7 @@ public macro Env(_ key: String) =
 /// resolving to the fallback.
 @attached(accessor)
 public macro Env<Value>(_ key: String, default: Value) =
-    #externalMacro(module: "EnvKitMacrosPlugin", type: "EnvMacro")
+  #externalMacro(module: "EnvKitMacrosPlugin", type: "EnvMacro")
 
 /// Reports an unreachable configuration failure from a generated getter.
 ///
@@ -57,11 +57,11 @@ public macro Env<Value>(_ key: String, default: Value) =
 /// Traps rather than returning a placeholder, because silently substituting a
 /// wrong configuration value is worse than stopping.
 public func envConfigurationFailure(_ error: any Error, key: String) -> Never {
-    fatalError(
-        """
-        Configuration key '\(key)' could not be read after validation succeeded. \
-        This indicates an EnvKit bug or a reader replaced post-initialization.
-        Underlying error: \(error)
-        """
-    )
+  fatalError(
+    """
+    Configuration key '\(key)' could not be read after validation succeeded. \
+    This indicates an EnvKit bug or a reader replaced post-initialization.
+    Underlying error: \(error)
+    """
+  )
 }

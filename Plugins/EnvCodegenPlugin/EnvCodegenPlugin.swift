@@ -51,106 +51,106 @@ import PackagePlugin
 /// executable built from source, which this tool is.
 @main
 struct EnvCodegenPlugin: BuildToolPlugin {
-    func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
-        try [
-            command(
-                tool: context.tool(named: "env-codegen"),
-                projectDirectory: context.package.directoryURL,
-                workDirectory: context.pluginWorkDirectoryURL,
-                targetName: target.name
-            ),
-        ]
+  func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
+    try [
+      command(
+        tool: context.tool(named: "env-codegen"),
+        projectDirectory: context.package.directoryURL,
+        workDirectory: context.pluginWorkDirectoryURL,
+        targetName: target.name
+      ),
+    ]
+  }
+
+  private func command(
+    tool: PluginContext.Tool,
+    projectDirectory: URL,
+    workDirectory: URL,
+    targetName: String
+  ) -> Command {
+    let schema = Self.resolvedSchema()
+    let output = workDirectory.appending(path: "EnvGenerated.swift")
+
+    var candidates = [".env.example", ".env", ".env.local"]
+    if let schema {
+      candidates.append(".env.\(schema)")
+      candidates.append(".env.\(schema).local")
     }
 
-    private func command(
-        tool: PluginContext.Tool,
-        projectDirectory: URL,
-        workDirectory: URL,
-        targetName: String
-    ) -> Command {
-        let schema = Self.resolvedSchema()
-        let output = workDirectory.appending(path: "EnvGenerated.swift")
-
-        var candidates = [".env.example", ".env", ".env.local"]
-        if let schema {
-            candidates.append(".env.\(schema)")
-            candidates.append(".env.\(schema).local")
-        }
-
-        var arguments = [
-            "--directory", projectDirectory.path(),
-            "--output", output.path(),
-        ]
-        if let schema {
-            arguments += ["--schema", schema]
-        }
-        if let typeName = Self.environment["ENV_TYPE_NAME"] {
-            arguments += ["--type-name", typeName]
-        }
-        if Self.environment["ENV_LENIENT"] == "1" {
-            arguments.append("--lenient")
-        }
-        if Self.environment["ENV_NO_OBFUSCATE"] == "1" {
-            arguments.append("--no-obfuscate")
-        }
-
-        // The directory covers creation and deletion, whose effect on a
-        // directory's modification time is the only signal available; the files
-        // cover edits.
-        let inputs =
-            [projectDirectory]
-            + candidates
-                .map { projectDirectory.appending(path: $0) }
-                .filter { FileManager.default.fileExists(atPath: $0.path()) }
-
-        return .buildCommand(
-            displayName:
-            "Generating configuration for \(targetName) (schema: \(schema ?? "none"))",
-            executable: tool.url,
-            arguments: arguments,
-            inputFiles: inputs,
-            outputFiles: [output]
-        )
+    var arguments = [
+      "--directory", projectDirectory.path(),
+      "--output", output.path(),
+    ]
+    if let schema {
+      arguments += ["--schema", schema]
+    }
+    if let typeName = Self.environment["ENV_TYPE_NAME"] {
+      arguments += ["--type-name", typeName]
+    }
+    if Self.environment["ENV_LENIENT"] == "1" {
+      arguments.append("--lenient")
+    }
+    if Self.environment["ENV_NO_OBFUSCATE"] == "1" {
+      arguments.append("--no-obfuscate")
     }
 
-    private static var environment: [String: String] {
-        ProcessInfo.processInfo.environment
-    }
+    // The directory covers creation and deletion, whose effect on a
+    // directory's modification time is the only signal available; the files
+    // cover edits.
+    let inputs =
+      [projectDirectory]
+        + candidates
+        .map { projectDirectory.appending(path: $0) }
+        .filter { FileManager.default.fileExists(atPath: $0.path()) }
 
-    /// Chooses a schema from the build environment.
-    ///
-    /// In priority order: `ENV_SCHEMA`, then Xcode's `CONFIGURATION` build
-    /// setting lowercased, then `debug`.
-    private static func resolvedSchema() -> String? {
-        if let explicit = environment["ENV_SCHEMA"], !explicit.isEmpty {
-            return explicit
-        }
-        // Xcode exports the active build configuration to build phases, which is
-        // how `Debug`/`Release` reach a plugin. SwiftPM does not, so
-        // `swift build -c release` needs `ENV_SCHEMA` set explicitly.
-        if let configuration = environment["CONFIGURATION"], !configuration.isEmpty {
-            return configuration.lowercased()
-        }
-        return "debug"
+    return .buildCommand(
+      displayName:
+      "Generating configuration for \(targetName) (schema: \(schema ?? "none"))",
+      executable: tool.url,
+      arguments: arguments,
+      inputFiles: inputs,
+      outputFiles: [output]
+    )
+  }
+
+  private static var environment: [String: String] {
+    ProcessInfo.processInfo.environment
+  }
+
+  /// Chooses a schema from the build environment.
+  ///
+  /// In priority order: `ENV_SCHEMA`, then Xcode's `CONFIGURATION` build
+  /// setting lowercased, then `debug`.
+  private static func resolvedSchema() -> String? {
+    if let explicit = environment["ENV_SCHEMA"], !explicit.isEmpty {
+      return explicit
     }
+    // Xcode exports the active build configuration to build phases, which is
+    // how `Debug`/`Release` reach a plugin. SwiftPM does not, so
+    // `swift build -c release` needs `ENV_SCHEMA` set explicitly.
+    if let configuration = environment["CONFIGURATION"], !configuration.isEmpty {
+      return configuration.lowercased()
+    }
+    return "debug"
+  }
 }
 
 #if canImport(XcodeProjectPlugin)
-    import XcodeProjectPlugin
+  import XcodeProjectPlugin
 
-    extension EnvCodegenPlugin: XcodeBuildToolPlugin {
-        func createBuildCommands(
-            context: XcodePluginContext,
-            target: XcodeTarget
-        ) throws -> [Command] {
-            try [
-                command(
-                    tool: context.tool(named: "env-codegen"),
-                    projectDirectory: context.xcodeProject.directoryURL,
-                    workDirectory: context.pluginWorkDirectoryURL,
-                    targetName: target.displayName
-                ),
-            ]
-        }
+  extension EnvCodegenPlugin: XcodeBuildToolPlugin {
+    func createBuildCommands(
+      context: XcodePluginContext,
+      target: XcodeTarget
+    ) throws -> [Command] {
+      try [
+        command(
+          tool: context.tool(named: "env-codegen"),
+          projectDirectory: context.xcodeProject.directoryURL,
+          workDirectory: context.pluginWorkDirectoryURL,
+          targetName: target.displayName
+        ),
+      ]
     }
+  }
 #endif
