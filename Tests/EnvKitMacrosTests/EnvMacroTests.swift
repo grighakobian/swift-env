@@ -265,8 +265,10 @@ final class EnvMacroTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message:
-                    "'@Env' property cannot have an initial value; supply a fallback with '@Env(\"KEY\", default:)' instead",
+                    message: """
+                        '@Env' property cannot have an initial value; \
+                        supply a fallback with '@Env("KEY", default:)' instead
+                        """,
                     line: 2,
                     column: 32,
                     fixIts: [FixItSpec(message: "remove the initial value")]
