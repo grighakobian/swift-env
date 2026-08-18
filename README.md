@@ -21,7 +21,7 @@ availability floor is macOS 15 / iOS 18.
 ## Installation
 
 ```swift
-.package(url: "https://github.com/your-org/swift-env", from: "1.0.0")
+.package(url: "https://github.com/grighakobian/swift-env", from: "1.0.0")
 ```
 
 ```swift
